@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: NexusMarket
+
+  # MySQL: relational persistence for catalog, inventory and transactions.
+  datasource:
+    url: jdbc:mysql://localhost:3306/nexusmarket?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # MongoDB: append-only history of inventory movements.
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/nexusmarket
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    application: DEBUG
