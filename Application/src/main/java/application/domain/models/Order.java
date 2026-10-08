@@ -30,7 +30,7 @@ import application.domain.valueobjects.OrderStatus;
  * - An Order may generate one Shipment when it includes physical products.
  * - An Order may generate zero or more Return instances.
  */
-public class Order {
+public class Order implements MarketplaceAsset {
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger(1000);
 
@@ -227,6 +227,18 @@ public class Order {
             throw new IllegalStateException(message + " (current status: "
                     + orderStatus.getCode() + ")");
         }
+    }
+
+    /** Marketplace asset identity of the order (Operation/Audit tracing). */
+    @Override
+    public String getAssetIdentifier() {
+        return String.valueOf(orderId);
+    }
+
+    /** Marketplace asset type of the order. */
+    @Override
+    public String getAssetType() {
+        return "ORDER";
     }
 
     /** Simple carrier for the primitive enum ReturnReason. */

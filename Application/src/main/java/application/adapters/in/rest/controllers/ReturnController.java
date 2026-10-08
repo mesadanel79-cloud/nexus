@@ -5,8 +5,11 @@ import application.domain.enums.ReturnReason;
 import application.domain.models.Refund;
 import application.domain.models.Return;
 import application.domain.ports.in.ApproveReturnUseCase;
+import application.domain.ports.in.CloseReturnUseCase;
+import application.domain.ports.in.ConsultReturnUseCase;
 import application.domain.ports.in.RequestReturnUseCase;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,11 +25,17 @@ public class ReturnController {
 
     private final RequestReturnUseCase requestReturnUseCase;
     private final ApproveReturnUseCase approveReturnUseCase;
+    private final ConsultReturnUseCase consultReturnUseCase;
+    private final CloseReturnUseCase closeReturnUseCase;
 
     public ReturnController(RequestReturnUseCase requestReturnUseCase,
-                            ApproveReturnUseCase approveReturnUseCase) {
+                            ApproveReturnUseCase approveReturnUseCase,
+                            ConsultReturnUseCase consultReturnUseCase,
+                            CloseReturnUseCase closeReturnUseCase) {
         this.requestReturnUseCase = requestReturnUseCase;
         this.approveReturnUseCase = approveReturnUseCase;
+        this.consultReturnUseCase = consultReturnUseCase;
+        this.closeReturnUseCase = closeReturnUseCase;
     }
 
     @PostMapping
@@ -52,5 +61,16 @@ public class ReturnController {
     @PostMapping("/{returnId}/rejection")
     public ResponseEntity<Return> reject(@PathVariable String returnId) {
         return ResponseEntity.ok(approveReturnUseCase.rejectReturn(returnId));
+    }
+    @GetMapping("/{returnId}")
+    public ResponseEntity<Return> consultReturn(
+            @PathVariable String returnId) {
+        return ResponseEntity.ok(consultReturnUseCase.consultReturn(returnId));
+    }
+
+    @PostMapping("/{returnId}/closing")
+    public ResponseEntity<Return> closeReturn(
+            @PathVariable String returnId) {
+        return ResponseEntity.ok(closeReturnUseCase.closeReturn(returnId));
     }
 }

@@ -80,24 +80,37 @@ public class InventoryReservationService {
     }
 
     /**
-     * Records sale outflow of reserved stock upon dispatch
+     * Records sale outflow of the stock reserved by this order upon dispatch
      * (SALIDA_POR_VENTA).
+     *
+     * Only the quantity reserved by the dispatched order is released, so
+     * reservations belonging to other orders in progress are never touched
+     * and negative stock is never produced.
      */
     public void registerSaleOutflow(Order order) {
         for (OrderItem item : order.getItems()) {
             if (item.getProduct() instanceof PhysicalProduct physicalProduct) {
+                int remaining = item.getQuantity();
                 List<Inventory> inventories =
                         inventoryRepository.findByProduct(physicalProduct);
                 for (Inventory inventory : inventories) {
-                    int reserved = inventory.getReservedQuantity();
-                    if (reserved > 0) {
-                        inventory.releaseSaleOutflow(reserved);
-                        inventoryRepository.save(inventory);
-                        movementRecorder.record(InventoryMovementType.SALIDA_POR_VENTA,
-                                reserved, physicalProduct.getIdentifier(),
-                                inventory.getWarehouse().getIdentifier());
+                    if (remaining <= 0) {
+                        break;
                     }
+                    int reserved = inventory.getReservedQuantity();
+                    if (reserved <= 0) {
+                        continue;
+                    }
+                    int outflow = Math.min(reserved, remaining);
+                    inventory.releaseSaleOutflow(outflow);
+                    inventoryRepository.save(inventory);
+                    movementRecorder.record(InventoryMovementType.SALIDA_POR_VENTA,
+                            outflow, physicalProduct.getIdentifier(),
+                            inventory.getWarehouse().getIdentifier());
+                    remaining -= outflow;
                 }
+                // A remaining quantity means the order had no reservation
+                // registered for it; nothing can be released in that case.
             }
         }
     }

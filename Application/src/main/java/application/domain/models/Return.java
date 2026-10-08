@@ -19,7 +19,7 @@ import application.domain.valueobjects.ReturnStatus;
  * - A Return is associated with one Order.
  * - A Return may generate one Refund when approved.
  */
-public class Return {
+public class Return implements MarketplaceAsset {
 
     private static final AtomicLong SEQUENCE = new AtomicLong(70000);
 
@@ -109,6 +109,32 @@ public class Return {
         ensureStatus(ReturnStatus.EN_REVISION, "Only returns under review can be rejected");
         this.decision = ApprovalDecision.RECHAZADO;
         this.returnStatus = ReturnStatus.RECHAZADA;
+    }
+
+    /**
+     * APROBADA/RECHAZADA -> CERRADA. Completes the return lifecycle when the
+     * applicable closure conditions have been satisfied.
+     */
+    public void close() {
+        if (!ReturnStatus.APROBADA.equals(returnStatus)
+                && !ReturnStatus.RECHAZADA.equals(returnStatus)) {
+            throw new IllegalStateException(
+                    "Only approved or rejected returns can be closed (current status: "
+                            + returnStatus.getCode() + ")");
+        }
+        this.returnStatus = ReturnStatus.CERRADA;
+    }
+
+    /** Marketplace asset identity of the return (Operation/Audit tracing). */
+    @Override
+    public String getAssetIdentifier() {
+        return returnId;
+    }
+
+    /** Marketplace asset type of the return. */
+    @Override
+    public String getAssetType() {
+        return "RETURN";
     }
 
     private void ensureStatus(ReturnStatus expected, String message) {

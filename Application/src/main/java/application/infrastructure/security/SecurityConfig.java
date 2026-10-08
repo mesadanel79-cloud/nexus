@@ -35,12 +35,36 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRADOR", "SUPERVISOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/products")
                         .hasAnyRole("VENDEDOR", "ADMINISTRADOR")
+                        // Product update and status changes: owning sellers/admins.
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/products/**")
+                        .hasAnyRole("VENDEDOR", "ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/products/**")
+                        .hasAnyRole("VENDEDOR", "ADMINISTRADOR")
+                        // Authentication: login/logout/customer registration are
+                        // open; employee registration and user status are internal.
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/logout",
+                                "/api/v1/auth/register/customers").permitAll()
+                        .requestMatchers("/api/v1/auth/register/employees",
+                                "/api/v1/auth/users/**")
+                        .hasRole("ADMINISTRADOR")
+                        // Customers: participants consult; staff changes status.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/customers/**")
+                        .hasAnyRole("COMPRADOR", "VENDEDOR", "ADMINISTRADOR",
+                                "SUPERVISOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/customers/**")
+                        .hasAnyRole("ADMINISTRADOR", "SUPERVISOR")
                         // Cart and orders: buyers.
                         .requestMatchers("/api/v1/cart/**", "/api/v1/orders/**")
                         .hasAnyRole("COMPRADOR", "ADMINISTRADOR", "SUPERVISOR")
                         // Shipments: logistics operators.
                         .requestMatchers("/api/v1/shipments/**")
                         .hasAnyRole("OPERADOR_LOGISTICO", "ADMINISTRADOR")
+                        // Bank accounts and transfers: participant + staff.
+                        .requestMatchers("/api/v1/bank/**")
+                        .hasAnyRole("COMPRADOR", "VENDEDOR", "ADMINISTRADOR",
+                                "SUPERVISOR", "OPERADOR_LOGISTICO")
                         // Returns/refunds: buyers request; staff evaluates.
                         .requestMatchers("/api/v1/returns/**")
                         .hasAnyRole("COMPRADOR", "ADMINISTRADOR", "SUPERVISOR",

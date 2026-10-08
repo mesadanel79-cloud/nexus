@@ -4,13 +4,23 @@ import application.adapters.out.persistence.mongodb.adapters.InventoryMovementRe
 import application.adapters.out.persistence.mysql.adapters.BuyerRepositoryAdapter;
 import application.adapters.out.persistence.mysql.adapters.OrderRepositoryAdapter;
 import application.adapters.out.persistence.mysql.adapters.ProductRepositoryAdapter;
+import application.adapters.out.persistence.mysql.adapters.SellerRepositoryAdapter;
 import application.domain.models.Administrator;
 import application.domain.models.LogisticsOperator;
 import application.domain.ports.out.NotificationService;
+import application.domain.ports.out.PasswordHasher;
+import application.domain.services.AuthorizationService;
+import application.domain.services.BankAccountService;
+import application.domain.services.CatalogManagementService;
+import application.domain.services.CustomerManagementService;
+import application.domain.services.ExecuteTransferService;
 import application.domain.services.InventoryReservationService;
+import application.domain.services.InvoicingService;
+import application.domain.services.OperationAuditService;
 import application.domain.services.OrderProcessingService;
 import application.domain.services.RefundProcessingService;
 import application.domain.services.ShipmentDispatchService;
+import application.domain.services.UserAuthenticationService;
 import application.domain.valueobjects.UserStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -116,6 +126,86 @@ public class DomainBeanConfig {
             NotificationService notificationService) {
         return new RefundProcessingService(orderRepositoryAdapter,
                 notificationService);
+    }
+
+    @Bean
+    public BankAccountService bankAccountService(
+            application.adapters.out.persistence.memory.BankAccountRepositoryAdapter bankAccountRepositoryAdapter,
+            BuyerRepositoryAdapter buyerRepositoryAdapter,
+            SellerRepositoryAdapter sellerRepositoryAdapter) {
+        return new BankAccountService(
+                bankAccountRepositoryAdapter,
+                buyerRepositoryAdapter,
+                sellerRepositoryAdapter);
+    }
+
+    @Bean
+    public ExecuteTransferService executeTransferService(
+            application.adapters.out.persistence.memory.BankAccountRepositoryAdapter bankAccountRepositoryAdapter) {
+        return new ExecuteTransferService(bankAccountRepositoryAdapter);
+    }
+
+    @Bean
+    public CustomerManagementService customerManagementService(
+            BuyerRepositoryAdapter buyerRepositoryAdapter,
+            SellerRepositoryAdapter sellerRepositoryAdapter,
+            OrderRepositoryAdapter orderRepositoryAdapter,
+            Administrator demoAdministrator) {
+        return new CustomerManagementService(buyerRepositoryAdapter,
+                sellerRepositoryAdapter, orderRepositoryAdapter)
+                .registerAdministrator(demoAdministrator);
+    }
+
+    @Bean
+    public CatalogManagementService catalogManagementService(
+            ProductRepositoryAdapter productRepositoryAdapter,
+            SellerRepositoryAdapter sellerRepositoryAdapter) {
+        return new CatalogManagementService(productRepositoryAdapter,
+                sellerRepositoryAdapter);
+    }
+
+    @Bean
+    public UserAuthenticationService userAuthenticationService(
+            application.adapters.out.persistence.memory.UserRepositoryAdapter userRepositoryAdapter,
+            BuyerRepositoryAdapter buyerRepositoryAdapter,
+            SellerRepositoryAdapter sellerRepositoryAdapter,
+            PasswordHasher passwordHasher,
+            Administrator demoAdministrator) {
+        return new UserAuthenticationService(userRepositoryAdapter,
+                buyerRepositoryAdapter, sellerRepositoryAdapter,
+                passwordHasher).registerAdministrator(demoAdministrator);
+    }
+
+    @Bean
+    public InvoicingService invoicingService(
+            OrderRepositoryAdapter orderRepositoryAdapter,
+            application.adapters.out.persistence.memory.InvoiceRepositoryAdapter invoiceRepositoryAdapter,
+            BuyerRepositoryAdapter buyerRepositoryAdapter) {
+        return new InvoicingService(orderRepositoryAdapter,
+                invoiceRepositoryAdapter, buyerRepositoryAdapter);
+    }
+
+    /**
+     * Authorization service (Authorization subdomain). Authorization is
+     * evaluated directly from the User and marketplace asset Domain Models,
+     * so it requires no output ports.
+     */
+    @Bean
+    public AuthorizationService authorizationService() {
+        return new AuthorizationService();
+    }
+
+    /**
+     * Operation and Audit service. Traceability records are persisted
+     * through the Operation and Audit output ports (in-memory adapters for
+     * development, replaceable by MySQL/MongoDB adapters).
+     */
+    @Bean
+    public OperationAuditService operationAuditService(
+            application.adapters.out.persistence.memory.OperationRepositoryAdapter operationRepositoryAdapter,
+            application.adapters.out.persistence.memory.AuditRepositoryAdapter auditRepositoryAdapter) {
+        return new OperationAuditService(operationRepositoryAdapter,
+                auditRepositoryAdapter);
     }
 
     /** Seeds a demo administrator for development purposes. */

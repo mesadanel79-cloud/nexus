@@ -17,7 +17,7 @@ import application.domain.valueobjects.ShipmentStatus;
  * - A Shipment is generated from one Order.
  * - A Shipment is managed by one LogisticsOperator.
  */
-public class Shipment {
+public class Shipment implements MarketplaceAsset {
 
     private static final AtomicLong SEQUENCE = new AtomicLong(90000);
 
@@ -113,6 +113,18 @@ public class Shipment {
         this.shipmentStatus = ShipmentStatus.ENTREGADO;
         this.deliveryDate = LocalDateTime.now();
         order.markDelivered();
+    }
+
+    /** Marketplace asset identity of the shipment (Operation/Audit tracing). */
+    @Override
+    public String getAssetIdentifier() {
+        return shipmentId;
+    }
+
+    /** Marketplace asset type of the shipment. */
+    @Override
+    public String getAssetType() {
+        return "SHIPMENT";
     }
 
     private void ensureStatus(ShipmentStatus expected, String message) {

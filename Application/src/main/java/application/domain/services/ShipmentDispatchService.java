@@ -60,6 +60,9 @@ public class ShipmentDispatchService implements DispatchShipmentUseCase {
         Shipment shipment = requireShipment(shipmentId);
         requireOperator(operatorId);
         shipment.dispatch();
+        // dispatch() also transitions the order to DESPACHADO: persist the
+        // order so the repository never keeps a stale lifecycle status.
+        orderRepository.save(shipment.getOrder());
         notificationService.notifyBuyer(shipment.getOrder().getBuyer().getEmail(),
                 "Order dispatched",
                 "Your order " + shipment.getOrder().getOrderId()

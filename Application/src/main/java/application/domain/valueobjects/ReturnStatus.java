@@ -5,9 +5,10 @@ package application.domain.valueobjects;
  *
  * Represents the status of a return request.
  *
- * Lifecycle: SOLICITADA -> EN_REVISION -> APROBADA | RECHAZADA.
+ * Lifecycle: SOLICITADA -> EN_REVISION -> APROBADA | RECHAZADA;
+ *            APROBADA/RECHAZADA -> CERRADA.
  *
- * Permitted values: SOLICITADA, EN_REVISION, APROBADA, RECHAZADA.
+ * Permitted values: SOLICITADA, EN_REVISION, APROBADA, RECHAZADA, CERRADA.
  */
 public final class ReturnStatus extends DomainCatalog {
 
@@ -23,9 +24,12 @@ public final class ReturnStatus extends DomainCatalog {
     public static final ReturnStatus RECHAZADA =
             new ReturnStatus("RECHAZADA", "Rechazada",
                     "Devolucion no aceptada.");
+    public static final ReturnStatus CERRADA =
+            new ReturnStatus("CERRADA", "Cerrada",
+                    "Ciclo de devolucion concluido.");
 
     private static final ReturnStatus[] VALUES =
-            {SOLICITADA, EN_REVISION, APROBADA, RECHAZADA};
+            {SOLICITADA, EN_REVISION, APROBADA, RECHAZADA, CERRADA};
 
     private ReturnStatus(String code, String name, String description) {
         super(code, name, description);

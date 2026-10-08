@@ -7,6 +7,8 @@ import application.domain.models.Order;
 import application.domain.models.Refund;
 import application.domain.models.Return;
 import application.domain.ports.in.ApproveReturnUseCase;
+import application.domain.ports.in.CloseReturnUseCase;
+import application.domain.ports.in.ConsultReturnUseCase;
 import application.domain.ports.in.RequestReturnUseCase;
 import application.domain.enums.ReturnReason;
 import application.domain.ports.out.NotificationService;
@@ -21,7 +23,7 @@ import application.domain.ports.out.OrderRepository;
  * - Only approved returns generate a Refund.
  */
 public class RefundProcessingService implements RequestReturnUseCase,
-        ApproveReturnUseCase {
+        ApproveReturnUseCase, ConsultReturnUseCase, CloseReturnUseCase {
 
     private final OrderRepository orderRepository;
     private final NotificationService notificationService;
@@ -92,6 +94,18 @@ public class RefundProcessingService implements RequestReturnUseCase,
                         "Refund not found: " + refundId));
         refund.markProcessed();
         return refund;
+    }
+
+    @Override
+    public Return consultReturn(String returnId) {
+        return requireReturn(returnId);
+    }
+
+    @Override
+    public Return closeReturn(String returnId) {
+        Return returnRequest = requireReturn(returnId);
+        returnRequest.close();
+        return returnRequest;
     }
 
     private Return requireReturn(String returnId) {

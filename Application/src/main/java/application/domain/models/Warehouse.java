@@ -17,7 +17,7 @@ import application.domain.valueobjects.WarehouseStatus;
  *
  * This class cannot be instantiated directly.
  */
-public abstract class Warehouse {
+public abstract class Warehouse implements MarketplaceAsset {
 
     private final String identifier;
     private String name;
@@ -89,5 +89,17 @@ public abstract class Warehouse {
      */
     public boolean isOperational() {
         return WarehouseStatus.ACTIVA.equals(status);
+    }
+
+    /** Marketplace asset identity of the warehouse (Operation/Audit tracing). */
+    @Override
+    public String getAssetIdentifier() {
+        return identifier;
+    }
+
+    /** Marketplace asset type of the warehouse. */
+    @Override
+    public String getAssetType() {
+        return "WAREHOUSE";
     }
 }
