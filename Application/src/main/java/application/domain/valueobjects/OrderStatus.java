@@ -10,9 +10,11 @@ package application.domain.valueobjects;
  *
  * Lifecycle: CARRITO -> PENDIENTE_DE_PAGO -> PAGADO -> DESPACHADO
  *            -> ENTREGADO_FINALIZADO.
+ * CANCELADO is reached from PENDIENTE_DE_PAGO or PAGADO (before dispatch),
+ * as defined by the Cancel Order service of the SDD.
  *
  * Permitted values: CARRITO, PENDIENTE_DE_PAGO, PAGADO, DESPACHADO,
- * ENTREGADO_FINALIZADO.
+ * ENTREGADO_FINALIZADO, CANCELADO.
  */
 public final class OrderStatus extends DomainCatalog {
 
@@ -31,9 +33,13 @@ public final class OrderStatus extends DomainCatalog {
     public static final OrderStatus ENTREGADO_FINALIZADO =
             new OrderStatus("ENTREGADO_FINALIZADO", "Entregado / Finalizado",
                     "Entrega concluida satisfactoriamente.");
+    public static final OrderStatus CANCELADO =
+            new OrderStatus("CANCELADO", "Cancelado",
+                    "Pedido cancelado antes de su despacho.");
 
     private static final OrderStatus[] VALUES =
-            {CARRITO, PENDIENTE_DE_PAGO, PAGADO, DESPACHADO, ENTREGADO_FINALIZADO};
+            {CARRITO, PENDIENTE_DE_PAGO, PAGADO, DESPACHADO,
+                    ENTREGADO_FINALIZADO, CANCELADO};
 
     private OrderStatus(String code, String name, String description) {
         super(code, name, description);

@@ -91,6 +91,45 @@ public abstract class Warehouse implements MarketplaceAsset {
         return WarehouseStatus.ACTIVA.equals(status);
     }
 
+    /**
+     * ACTIVA -> BLOQUEADA. A blocked warehouse stops receiving inventory
+     * movements until it is unblocked.
+     */
+    public void block() {
+        if (WarehouseStatus.CERRADA.equals(status)) {
+            throw new IllegalStateException(
+                    "Closed warehouse " + identifier + " cannot be blocked");
+        }
+        if (!WarehouseStatus.ACTIVA.equals(status)) {
+            throw new IllegalStateException(
+                    "Only active warehouses can be blocked (current status: "
+                            + status.getCode() + ")");
+        }
+        this.status = WarehouseStatus.BLOQUEADA;
+    }
+
+    /** BLOQUEADA -> ACTIVA. */
+    public void unblock() {
+        if (!WarehouseStatus.BLOQUEADA.equals(status)) {
+            throw new IllegalStateException(
+                    "Only blocked warehouses can be unblocked (current status: "
+                            + status.getCode() + ")");
+        }
+        this.status = WarehouseStatus.ACTIVA;
+    }
+
+    /**
+     * Any state -> CERRADA. Terminal state: a closed warehouse is never
+     * reopened.
+     */
+    public void close() {
+        if (WarehouseStatus.CERRADA.equals(status)) {
+            throw new IllegalStateException(
+                    "Warehouse " + identifier + " is already closed");
+        }
+        this.status = WarehouseStatus.CERRADA;
+    }
+
     /** Marketplace asset identity of the warehouse (Operation/Audit tracing). */
     @Override
     public String getAssetIdentifier() {

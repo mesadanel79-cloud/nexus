@@ -196,6 +196,23 @@ public class Order implements MarketplaceAsset {
         return returnRequest;
     }
 
+    /**
+     * Cancels the order: PENDIENTE_DE_PAGO or PAGADO -> CANCELADO.
+     *
+     * Business rule (SDD Cancel Order): cancellation is only permitted before
+     * the order is dispatched; a dispatched or completed order is never
+     * cancelled through this path.
+     */
+    public void cancel() {
+        if (!OrderStatus.PENDIENTE_DE_PAGO.equals(orderStatus)
+                && !OrderStatus.PAGADO.equals(orderStatus)) {
+            throw new IllegalStateException(
+                    "Orders can only be cancelled while pending payment or paid"
+                            + " (current status: " + orderStatus.getCode() + ")");
+        }
+        this.orderStatus = OrderStatus.CANCELADO;
+    }
+
     /** Total value of the order. */
     public BigDecimal getTotalAmount() {
         return items.stream()
