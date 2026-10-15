@@ -24,9 +24,22 @@ public final class ShipmentStatus extends DomainCatalog {
     public static final ShipmentStatus ENTREGADO =
             new ShipmentStatus("ENTREGADO", "Entregado",
                     "Pedido entregado al comprador.");
+    public static final ShipmentStatus EN_ESPERA_APROBACION =
+            new ShipmentStatus("EN_ESPERA_APROBACION", "En Espera de Aprobacion",
+                    "Envio pendiente de aprobacion antes del despacho.");
+    public static final ShipmentStatus APROBADO =
+            new ShipmentStatus("APROBADO", "Aprobado",
+                    "Envio aprobado y listo para despacho.");
+    public static final ShipmentStatus RECHAZADO =
+            new ShipmentStatus("RECHAZADO", "Rechazado",
+                    "Envio rechazado durante la aprobacion.");
+    public static final ShipmentStatus EXPIRADO =
+            new ShipmentStatus("EXPIRADO", "Expirado",
+                    "Envio expirado por falta de aprobacion en la ventana permitida.");
 
     private static final ShipmentStatus[] VALUES =
-            {EN_PREPARACION, DESPACHADO, EN_TRANSITO, ENTREGADO};
+            {EN_PREPARACION, DESPACHADO, EN_TRANSITO, ENTREGADO,
+                    EN_ESPERA_APROBACION, APROBADO, RECHAZADO, EXPIRADO};
 
     private ShipmentStatus(String code, String name, String description) {
         super(code, name, description);

@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import application.domain.models.BankAccount;
 import application.domain.models.Transfer;
+import application.domain.ports.out.BankAccountQueryPort;
 import application.domain.ports.out.BankAccountRepository;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Component;
  * domain.
  */
 @Component
-public class BankAccountRepositoryAdapter implements BankAccountRepository {
+public class BankAccountRepositoryAdapter implements BankAccountRepository,
+        BankAccountQueryPort {
 
     private final Map<String, BankAccount> accounts = new ConcurrentHashMap<>();
     private final Map<String, List<Transfer>> transfers = new ConcurrentHashMap<>();
@@ -56,5 +58,15 @@ public class BankAccountRepositoryAdapter implements BankAccountRepository {
     public List<Transfer> findTransfersFor(String accountNumber) {
         return List.copyOf(
                 transfers.getOrDefault(accountNumber, List.of()));
+    }
+
+    @Override
+    public List<BankAccount> findAllAccounts() {
+        return List.copyOf(accounts.values());
+    }
+
+    @Override
+    public Optional<BankAccount> findMarketplaceAccount() {
+        return accounts.values().stream().findFirst();
     }
 }

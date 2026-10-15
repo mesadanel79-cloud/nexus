@@ -4,7 +4,9 @@ import application.domain.models.Buyer;
 import application.domain.models.Order;
 import application.domain.models.ShoppingCart;
 import application.domain.ports.in.AddToCartUseCase;
+import application.domain.ports.in.CancelOrderUseCase;
 import application.domain.ports.in.ConfirmPaymentUseCase;
+import application.domain.ports.in.ConsultOrderUseCase;
 import application.domain.ports.in.PlaceOrderUseCase;
 import application.domain.ports.out.BuyerRepository;
 import application.domain.ports.out.NotificationService;
@@ -20,7 +22,7 @@ import application.domain.ports.out.ProductRepository;
  * ConfirmPaymentUseCase.
  */
 public class OrderProcessingService implements AddToCartUseCase, PlaceOrderUseCase,
-        ConfirmPaymentUseCase {
+        ConfirmPaymentUseCase, CancelOrderUseCase, ConsultOrderUseCase {
 
     private final BuyerRepository buyerRepository;
     private final ProductRepository productRepository;
@@ -94,8 +96,29 @@ public class OrderProcessingService implements AddToCartUseCase, PlaceOrderUseCa
         return saved;
     }
 
+    @Override
+    public Order cancelOrder(Integer orderId) {
+        Order order = requireOrder(orderId);
+        order.cancel();
+        Order saved = orderRepository.save(order);
+        notificationService.notifyBuyer(saved.getBuyer().getEmail(),
+                "Order cancelled",
+                "Your order " + saved.getOrderId() + " was cancelled.");
+        return saved;
+    }
+
+    @Override
+    public Order consultOrder(Integer orderId) {
+        return requireOrder(orderId);
+    }
+
     private Buyer requireBuyer(String buyerId) {
         return buyerRepository.findById(buyerId)
                 .orElseThrow(() -> new IllegalArgumentException("Buyer not found: " + buyerId));
+    }
+
+    private Order requireOrder(Integer orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
     }
 }

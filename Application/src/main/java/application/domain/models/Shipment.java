@@ -88,11 +88,16 @@ public class Shipment implements MarketplaceAsset {
     }
 
     /**
-     * Physical departure from the warehouse: EN_PREPARACION -> DESPACHADO.
-     * The associated order transitions to DISPATCHED as well.
+     * Physical departure from the warehouse: EN_PREPARACION/APROBADO ->
+     * DESPACHADO. The associated order transitions to DISPATCHED as well.
      */
     public void dispatch() {
-        ensureStatus(ShipmentStatus.EN_PREPARACION, "Only shipments in preparation can be dispatched");
+        if (!ShipmentStatus.EN_PREPARACION.equals(shipmentStatus)
+                && !ShipmentStatus.APROBADO.equals(shipmentStatus)) {
+            throw new IllegalStateException(
+                    "Only shipments in preparation or approved can be dispatched"
+                            + " (current status: " + shipmentStatus.getCode() + ")");
+        }
         this.shipmentStatus = ShipmentStatus.DESPACHADO;
         this.dispatchDate = LocalDateTime.now();
         order.markDispatched();
@@ -113,6 +118,46 @@ public class Shipment implements MarketplaceAsset {
         this.shipmentStatus = ShipmentStatus.ENTREGADO;
         this.deliveryDate = LocalDateTime.now();
         order.markDelivered();
+    }
+
+    /**
+     * EN_PREPARACION -> EN_ESPERA_APROBACION. Required when business rules
+     * demand authorization before dispatch (SDD Submit Shipment For Approval).
+     */
+    public void submitForApproval() {
+        ensureStatus(ShipmentStatus.EN_PREPARACION,
+                "Only shipments in preparation can be submitted for approval");
+        this.shipmentStatus = ShipmentStatus.EN_ESPERA_APROBACION;
+    }
+
+    /**
+     * EN_ESPERA_APROBACION -> APROBADO. Allows the shipment to proceed
+     * to dispatch.
+     */
+    public void approve() {
+        ensureStatus(ShipmentStatus.EN_ESPERA_APROBACION,
+                "Only shipments awaiting approval can be approved");
+        this.shipmentStatus = ShipmentStatus.APROBADO;
+    }
+
+    /**
+     * EN_ESPERA_APROBACION -> RECHAZADO. Terminal decision recorded
+     * with the business operation.
+     */
+    public void reject() {
+        ensureStatus(ShipmentStatus.EN_ESPERA_APROBACION,
+                "Only shipments awaiting approval can be rejected");
+        this.shipmentStatus = ShipmentStatus.RECHAZADO;
+    }
+
+    /**
+     * EN_ESPERA_APROBACION -> EXPIRADO. The approval window elapsed
+     * without a decision.
+     */
+    public void expire() {
+        ensureStatus(ShipmentStatus.EN_ESPERA_APROBACION,
+                "Only shipments awaiting approval can expire");
+        this.shipmentStatus = ShipmentStatus.EXPIRADO;
     }
 
     /** Marketplace asset identity of the shipment (Operation/Audit tracing). */

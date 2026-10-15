@@ -86,6 +86,27 @@ public final class OperationType extends DomainCatalog {
     public static final OperationType CIERRE_DEVOLUCION =
             new OperationType("CIERRE_DEVOLUCION", "Cierre de Devolucion",
                     "Conclusion del ciclo de vida de una devolucion.");
+    public static final OperationType APERTURA_CUENTA =
+            new OperationType("APERTURA_CUENTA", "Apertura de Cuenta",
+                    "Registro inicial de una cuenta bancaria del marketplace.");
+    public static final OperationType DEPOSITO_CUENTA =
+            new OperationType("DEPOSITO_CUENTA", "Deposito en Cuenta",
+                    "Ingreso de fondos a una cuenta bancaria.");
+    public static final OperationType RETIRO_CUENTA =
+            new OperationType("RETIRO_CUENTA", "Retiro de Cuenta",
+                    "Retiro de fondos de una cuenta bancaria.");
+    public static final OperationType BLOQUEO_CUENTA =
+            new OperationType("BLOQUEO_CUENTA", "Bloqueo de Cuenta",
+                    "Cambio del estado operativo de una cuenta a bloqueada.");
+    public static final OperationType DESBLOQUEO_CUENTA =
+            new OperationType("DESBLOQUEO_CUENTA", "Desbloqueo de Cuenta",
+                    "Restablecimiento del estado operativo de una cuenta.");
+    public static final OperationType CIERRE_CUENTA =
+            new OperationType("CIERRE_CUENTA", "Cierre de Cuenta",
+                    "Cierre definitivo de una cuenta segun las reglas de negocio.");
+    public static final OperationType TRANSFERENCIA_BANCARIA =
+            new OperationType("TRANSFERENCIA_BANCARIA", "Transferencia Bancaria",
+                    "Movimiento atomico de valor entre dos cuentas bancarias.");
 
     private static final OperationType[] VALUES = {
             APERTURA_BODEGA, INGRESO_STOCK, RETIRO_STOCK, BLOQUEO_BODEGA,
@@ -94,7 +115,9 @@ public final class OperationType extends DomainCatalog {
             PAGO_PEDIDO, CIERRE_PEDIDO, CREACION_ENVIO, APROBACION_ENVIO,
             RECHAZO_ENVIO, DESPACHO_ENVIO, EXPIRACION_ENVIO,
             SOLICITUD_DEVOLUCION, APROBACION_DEVOLUCION, RECHAZO_DEVOLUCION,
-            REGISTRO_REEMBOLSO, CIERRE_DEVOLUCION};
+            REGISTRO_REEMBOLSO, CIERRE_DEVOLUCION, APERTURA_CUENTA,
+            DEPOSITO_CUENTA, RETIRO_CUENTA, BLOQUEO_CUENTA,
+            DESBLOQUEO_CUENTA, CIERRE_CUENTA, TRANSFERENCIA_BANCARIA};
 
     private OperationType(String code, String name, String description) {
         super(code, name, description);
@@ -152,5 +175,13 @@ public final class OperationType extends DomainCatalog {
         return equals(APROBACION_DEVOLUCION) || equals(RECHAZO_DEVOLUCION)
                 || equals(REGISTRO_REEMBOLSO) || equals(APROBACION_ENVIO)
                 || equals(RECHAZO_ENVIO);
+    }
+
+    /** True for operations over a bank account. */
+    public boolean isBankOperation() {
+        return equals(APERTURA_CUENTA) || equals(DEPOSITO_CUENTA)
+                || equals(RETIRO_CUENTA) || equals(BLOQUEO_CUENTA)
+                || equals(DESBLOQUEO_CUENTA) || equals(CIERRE_CUENTA)
+                || equals(TRANSFERENCIA_BANCARIA);
     }
 }
